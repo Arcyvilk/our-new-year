@@ -1,10 +1,5 @@
 const WebSocket = require('ws');
 
-// type TMessage = {
-//     user: string,
-//     type: string // "firework" // HB
-// }
-
 class WS {
     constructor(server) {
         this.HB = {
@@ -28,6 +23,7 @@ class WS {
                 type: 'update'
             };
             this.clients.map(client => client.ws.send(JSON.stringify(participantsUpdate)));
+            console.log(`${Date.now()} - ${message.user} joined`)
         },
         firework: (message) => {
             this.clients.map(client => client.ws.send(JSON.stringify(message)))
@@ -50,18 +46,20 @@ class WS {
 
     filterInactiveClients = (client) => {
         if (Date.now() - client.lastSeen >= this.HB.timeout) {
-            console.log(`${new Date()} - user left - ${client.user}`);
-            const msgUpdate = {
-                participants: this.clients.map(client => client.user),
-                type: 'update'
-            };
-            this.clients.map(client => client.ws.send(JSON.stringify(msgUpdate)));
+            console.log(`${Date.now()} - ${client.user} left`)
             return false;
         }
         return true;
     }
 
-    monitorHBs = () => this.clients = this.clients.filter(client => this.filterInactiveClients(client));
+    monitorHBs = () => {
+        this.clients = this.clients.filter(client => this.filterInactiveClients(client));
+        const msgUpdate = {
+            participants: this.clients.map(client => client.user),
+            type: 'update'
+        };
+        this.clients.map(client => client.ws.send(JSON.stringify(msgUpdate)));
+    }
 
     connectToWebsocket() {
         this.ws.on('connection', client => {

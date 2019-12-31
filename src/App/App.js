@@ -2,13 +2,17 @@ import React from 'react';
 import * as Fireworks from 'fireworks-canvas';
 import StyledApp from './StyledApp';
 import config from '../config.json';
+import Users from '../components/Users';
 
 class App extends React.Component {
   constructor() {
     super();
 
     this.state = {
-      user: null
+      user: null,
+      participants: [
+        "dupa","dupa","dupa","dupa"
+      ]
     }
     this.fireworks = null;
     this.HBinterval = 2000;
@@ -67,7 +71,7 @@ class App extends React.Component {
   receiveMessage = (message) => {
     switch(message.type) {
       case 'firework': return this.fireworks.fire()
-      case 'update': return // [TODO]
+      case 'update': return this.setState({ participants: message.participants })
       default: return
     }
   }
@@ -91,6 +95,7 @@ class App extends React.Component {
   login = () => {
     return this.state.user
       ? <StyledApp onClick={ this.fire } >
+          <Users>{ this.state.participants.map(participant => <li>{ participant }</li>)}</Users>
           <div id='fireworks' />
         </StyledApp>
       : <div> :( </div>
