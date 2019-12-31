@@ -46,7 +46,7 @@ class WS {
 
     filterInactiveClients = (client) => {
         if (Date.now() - client.lastSeen >= this.HB.timeout) {
-            console.log(`${Date.now()} - ${client.user} left`)
+            console.log(`${new Date().toLocaleString()} - ${client.user} left`)
             return false;
         }
         return true;
