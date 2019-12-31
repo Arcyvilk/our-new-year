@@ -21,7 +21,7 @@
   },
   "scripts": {
     "tsc": "tsc",
-    "server": "tsc && node dist/fireworks.js",
+    "server": "node fireworks.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

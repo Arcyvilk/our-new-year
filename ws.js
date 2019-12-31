@@ -1,29 +1,23 @@
-import WebSocket from 'ws';
-import http from 'http';
+const WebSocket = require('ws');
 
-type TMessage = {
-    user: string,
-    type: string // "firework" // HB
-}
+// type TMessage = {
+//     user: string,
+//     type: string // "firework" // HB
+// }
+
 class WS {
-    private HB: {
-        interval: number,
-        timeout: number
-    }
-    private clients: any[ ];
-    private ws:any;
-
-    constructor(server:http.Server) {
+    constructor(server) {
         this.HB = {
             interval: 2000,
             timeout: 10000
         }
-        this.clients = [];;
+        this.clients = [];
+        this.server = server;
+        this.ws = null;
     }
 
     messageType = {
-        firework: (message:TMessage) => this.clients.map(client => client.ws.send(JSON.stringify(message))),
-        joined: (message:TMessage, client:any) => {
+        joined: (message, client) => {
             this.clients.push({
                 user: message.user,
                 lastSeen: Date.now(),
@@ -35,7 +29,10 @@ class WS {
             };
             this.clients.map(client => client.ws.send(JSON.stringify(participantsUpdate)));
         },
-        HB: (message:TMessage) => {
+        firework: (message) => {
+            this.clients.map(client => client.ws.send(JSON.stringify(message)))
+        },
+        HB: (message) => {
             this.clients.map(client => {
                 if (client.user === message.user)
                     client.lastSeen = Date.now();
@@ -43,7 +40,7 @@ class WS {
         }
     }
 
-    sendInitialData = (client:WebSocket) => {
+    sendInitialData = (client) => {
         const initialData = {
             participants: this.clients.map(client => client.user),
             type: 'update'
@@ -51,7 +48,7 @@ class WS {
         client.send(JSON.stringify(initialData))
     }
 
-    filterInactiveClients = (client:any) => {
+    filterInactiveClients = (client) => {
         if (Date.now() - client.lastSeen >= this.HB.timeout) {
             console.log(`${new Date()} - user left - ${client.user}`);
             const msgUpdate = {
@@ -66,13 +63,14 @@ class WS {
 
     monitorHBs = () => this.clients = this.clients.filter(client => this.filterInactiveClients(client));
 
-    connectToWebsocket(ws:WebSocket.Server) {
-        ws.on('connection', client => {
+    connectToWebsocket() {
+        this.ws.on('connection', client => {
             this.sendInitialData(client);
-            client.on('message', (msg: string) => {
-                const message:TMessage = JSON.parse(msg);
+            client.on('message', (msg) => {
+                const message = JSON.parse(msg);
                 switch(message.type) {
-                    case('firework'): return this.messageType.firework(message); 
+                    case('joined'): return this.messageType.joined(message, client);
+                    case('firework'): return this.messageType.firework(message);
                     case('HB'): return this.messageType.HB(message); 
                     default: return;
                 }
@@ -84,10 +82,10 @@ class WS {
         }) 
     }
 
-    openWebsocket(roomID: string) {
-        this.ws = new WebSocket.Server({ server: this.server, path: `/${roomID}` });
-        this.connectToWebsocket(this.ws);            
+    openWebsocket() {
+        this.ws = new WebSocket.Server({ server: this.server });
+        this.connectToWebsocket();
     }
 }
 
-export default WS;
+module.exports = WS;

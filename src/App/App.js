@@ -1,40 +1,19 @@
 import React from 'react';
-import styled from 'styled-components';
-// import fireworks from 'fireworks';
 import * as Fireworks from 'fireworks-canvas';
-
-import background from '../shared/images/city.jpg';
-
-const StyledApp = styled.div`
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  background: black url(${background}) no-repeat fixed center;
-  background-size: cover;
-  overflow: auto;
-
-  #fireworks {
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-
-    canvas {
-      width: 100%;
-      height: 100%;
-    }
-  }
-`;
+import StyledApp from './StyledApp';
+import config from '../config.json';
 
 class App extends React.Component {
   constructor() {
     super();
-    
+
     this.state = {
       user: null
     }
     this.fireworks = null;
-    this.fire = this.fire.bind(this);
+    this.HBinterval = 2000;
+    this.url = `ws://${config.HOST ? config.HOST : 'localhost'}:${config.PORT}`;
+    this.ws = null;
   }
 
   componentWillMount = () => {
@@ -42,7 +21,7 @@ class App extends React.Component {
     
     if (!user)
       return;
-    else 
+    else
       this.setState({ user });
   }
   componentDidMount = () => this.init();
@@ -60,17 +39,53 @@ class App extends React.Component {
     
     if (!container)
       return;
-    else 
+    else {
       this.fireworks = new Fireworks(container, options);
+      this.openWs();
+    }
   }
 
+  // WEBSOCKETS
+  sendStringified = (message) => this.ws.send(JSON.stringify(message));
+  openWs = () => {
+    this.ws = new WebSocket(this.url);
+    this.ws.onopen = () => {
+      const data = {
+        type: 'joined',
+        user: this.state.user
+      };
+      this.sendStringified(data);
+    }
+    this.ws.onclose = () => console.log(`Websocket disconnected - ${this.url}`);
+    this.ws.onmessage = event => {
+      const message = JSON.parse(event.data);
+      this.receiveMessage(message);
+    }
+    setInterval(this.sendHB, this.HBinterval);
+    console.log(`Websocket connected - ${this.url}`)
+  }
+  receiveMessage = (message) => {
+    switch(message.type) {
+      case 'firework': return this.fireworks.fire()
+      case 'update': return // [TODO]
+      default: return
+    }
+  }
+  sendHB = () => {
+    const data = { 
+        type: 'HB',
+        user: this.state.user
+    };
+    this.sendStringified(data);
+  }
+
+  // FIREWORKS
   fire = event => {
-    this.setState({
-      x: event.clientX,
-      y: event.clientY
-    });
-    
-    this.fireworks.fire();
+    const firework = {
+      user: this.state.user,
+      type: "firework"
+    }
+    this.sendStringified(firework);
   }
 
   login = () => {
