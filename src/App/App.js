@@ -29,12 +29,22 @@ const StyledApp = styled.div`
 class App extends React.Component {
   constructor() {
     super();
-
+    
+    this.state = {
+      user: null
+    }
     this.fireworks = null;
-
     this.fire = this.fire.bind(this);
   }
 
+  componentWillMount = () => {
+    const user = prompt("Enter your nickname");
+    
+    if (!user)
+      return;
+    else 
+      this.setState({ user });
+  }
   componentDidMount = () => this.init();
 
   init = () => {
@@ -47,7 +57,11 @@ class App extends React.Component {
       explosionMaxHeight: 0.9,  // percentage. max height before a particle is exploded
       explosionChance: 0.08     // chance in each tick the rocket will explode
     }
-    this.fireworks = new Fireworks(container, options);
+    
+    if (!container)
+      return;
+    else 
+      this.fireworks = new Fireworks(container, options);
   }
 
   fire = event => {
@@ -59,10 +73,16 @@ class App extends React.Component {
     this.fireworks.fire();
   }
 
+  login = () => {
+    return this.state.user
+      ? <StyledApp onClick={ this.fire } >
+          <div id='fireworks' />
+        </StyledApp>
+      : <div> :( </div>
+  }
+
   render() {
-    return <StyledApp onClick={ this.fire } >
-      <div id='fireworks' />
-    </StyledApp>
+    return this.login()
   }
 }
 

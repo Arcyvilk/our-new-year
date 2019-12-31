@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import http from 'http';
+import WebSocket from 'ws';
 import bodyParser from 'body-parser';
 import config from './config.json';
 
