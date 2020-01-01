@@ -23,7 +23,7 @@ class WS {
                 type: 'update'
             };
             this.clients.map(client => client.ws.send(JSON.stringify(participantsUpdate)));
-            console.log(`${Date.now()} - ${message.user} joined`)
+            console.log(`${new Date().toLocaleString()} - ${message.user} joined`)
         },
         firework: (message) => {
             this.clients.map(client => client.ws.send(JSON.stringify(message)))
@@ -32,6 +32,7 @@ class WS {
             this.clients.map(client => {
                 if (client.user === message.user)
                     client.lastSeen = Date.now();
+                return client;
             })
         }
     }

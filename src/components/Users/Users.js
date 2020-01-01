@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import Nick from './Nick';
 
 const StyledUsers = styled.ul`
     position: absolute;
@@ -13,7 +14,7 @@ const StyledUsers = styled.ul`
     list-style-type: none;
     background-color: rgba(0,0,0,0.3);
     box-sizing: border-box;
-    color: #fdc00033;
+    color: #fdc000;
 
     h1 {
         margin: 0;
@@ -26,6 +27,7 @@ const StyledUsers = styled.ul`
 `;
 
 class Users extends React.Component {
+    static Nick = Nick;
     render() {
         return <StyledUsers>
             <h1>Online</h1>

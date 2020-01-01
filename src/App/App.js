@@ -10,9 +10,7 @@ class App extends React.Component {
 
     this.state = {
       user: null,
-      participants: [
-        "dupa","dupa","dupa","dupa"
-      ]
+      participants: [ ]
     }
     this.fireworks = null;
     this.HBinterval = 2000;
@@ -36,9 +34,9 @@ class App extends React.Component {
       maxRockets: 5,            // max # of rockets to spawn
       rocketSpawnInterval: 150, // millisends to check if new rockets should spawn
       numParticles: 100,        // number of particles to spawn when rocket explodes (+0-10)
-      explosionMinHeight: 0.5,  // percentage. min height at which rockets can explode
-      explosionMaxHeight: 0.9,  // percentage. max height before a particle is exploded
-      explosionChance: 0.08     // chance in each tick the rocket will explode
+      explosionMinHeight: 0.6,  // percentage. min height at which rockets can explode
+      explosionMaxHeight: 1,    // percentage. max height before a particle is exploded
+      explosionChance: 0.1      // chance in each tick the rocket will explode
     }
     
     if (!container)
@@ -70,8 +68,8 @@ class App extends React.Component {
   }
   receiveMessage = (message) => {
     switch(message.type) {
-      case 'firework': return this.fireworks.fire()
-      case 'update': return this.setState({ participants: message.participants })
+      case 'firework': return this.fire(message)
+      case 'update': return this.setState({ participants: message.participants.map(participant => ({ user: participant, active: false })) })
       default: return
     }
   }
@@ -84,7 +82,7 @@ class App extends React.Component {
   }
 
   // FIREWORKS
-  fire = event => {
+  sendFireEvent = event => {
     const firework = {
       user: this.state.user,
       type: "firework"
@@ -92,10 +90,34 @@ class App extends React.Component {
     this.sendStringified(firework);
   }
 
+  sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+  fire = async message => {
+    this.fireworks.fire();
+    this.activateUser(message.user, true);
+    await this.sleep(10000);
+    this.activateUser(message.user, false);
+  }
+
+  activateUser = (user, active) => {
+    this.setState({
+      participants: [
+        ...this.state.participants.map(participant => {
+          if (participant.user === user) 
+            participant.active = active;
+          return participant;
+        })
+      ]
+    })
+  }
+
   login = () => {
     return this.state.user
-      ? <StyledApp onClick={ this.fire } >
-          <Users>{ this.state.participants.map(participant => <li>{ participant }</li>)}</Users>
+      ? <StyledApp onClick={ this.sendFireEvent } >
+          <Users>{ 
+            this.state.participants.map(participant => <Users.Nick active={ participant.active }>{ participant.user }</Users.Nick>)
+            }
+          </Users>
           <div id='fireworks' />
         </StyledApp>
       : <div> :( </div>
