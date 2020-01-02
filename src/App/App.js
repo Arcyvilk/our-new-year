@@ -13,7 +13,7 @@ class App extends React.Component {
       participants: [ ]
     }
     this.fireworks = null;
-    this.HBinterval = 2000;
+    this.HBinterval = 5000;
     this.url = `ws://${config.HOST ? config.HOST : 'localhost'}:${config.PORT}`;
     this.ws = null;
   }
@@ -89,18 +89,12 @@ class App extends React.Component {
     }
     this.sendStringified(firework);
   }
-
-  sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
   fire = async message => {
     this.fireworks.fire();
     this.activateUser(message.user, true);
-    const d = Date.now();
-    await this.sleep(2000);
-    console.log(Date.now() - d);
+    await this.sleep(200);
     this.activateUser(message.user, false);
   }
-
   activateUser = (user, active) => {
     this.setState({
       participants: [
@@ -113,6 +107,8 @@ class App extends React.Component {
     })
   }
 
+  // OTHER
+  sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
   login = () => {
     return this.state.user
       ? <StyledApp onClick={ this.sendFireEvent } >

@@ -47,20 +47,19 @@ class WS {
 
     filterInactiveClients = (client) => {
         if (Date.now() - client.lastSeen >= this.HB.timeout) {
-            console.log(`${new Date().toLocaleString()} - ${client.user} left`)
+            console.log(`${new Date().toLocaleString()} - ${client.user} left`);
+            const msgUpdate = {
+                participants: this.clients.map(client => client.user),
+                type: 'update'
+            };
+            this.clients.map(client => client.ws.send(JSON.stringify(msgUpdate)));
             return false;
         }
         return true;
     }
 
-    monitorHBs = () => {
-        this.clients = this.clients.filter(client => this.filterInactiveClients(client));
-        const msgUpdate = {
-            participants: this.clients.map(client => client.user),
-            type: 'update'
-        };
-        this.clients.map(client => client.ws.send(JSON.stringify(msgUpdate)));
-    }
+    monitorHBs = () =>
+        this.clients = this.clients.filter(client => this.filterInactiveClients(client))
 
     connectToWebsocket() {
         this.ws.on('connection', client => {
