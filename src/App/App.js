@@ -95,7 +95,9 @@ class App extends React.Component {
   fire = async message => {
     this.fireworks.fire();
     this.activateUser(message.user, true);
-    await this.sleep(10000);
+    const d = Date.now();
+    await this.sleep(2000);
+    console.log(Date.now() - d);
     this.activateUser(message.user, false);
   }
 
@@ -115,7 +117,7 @@ class App extends React.Component {
     return this.state.user
       ? <StyledApp onClick={ this.sendFireEvent } >
           <Users>{ 
-            this.state.participants.map(participant => <Users.Nick active={ participant.active }>{ participant.user }</Users.Nick>)
+            this.state.participants.map(participant => <Users.Nick active={ participant.active }><span role='img' aria-label='emoji'>🎆</span>{ participant.user }</Users.Nick>)
             }
           </Users>
           <div id='fireworks' />
